@@ -39,7 +39,7 @@ public:
 private:
 	TreeNode<T> *ptr;
 };
-//Definition of Set class, templated
+//Definition of Set class, templated 
 template<typename T> class ExtSet{
 public:
 	ExtSet() : root(NULL), size(0) {}
