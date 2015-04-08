@@ -39,7 +39,7 @@ public:
 private:
 	TreeNode<T> *ptr;
 };
-//Definition of Set class, templated
+//Definition of Set class, templated 
 template<typename T> class ExtSet{
 public:
 	ExtSet() : root(NULL), size(0) {}
@@ -68,10 +68,11 @@ public:
 
 	//Output and Print Trees
 	friend std::ostream& operator<<(std::ostream& ostr, const ExtSet<T>& s){
-		s.print_in_order(ostr, s.root); //TODO why s. here?
+		s.print_in_order(ostr, s.root); //TODO
 		return ostr;
 	}
 	void breadth_first_search() const{
+		//breadth_first_search(root);
 		breadth_first_search_v2(root);
 	}
 	void print_as_sideways_tree(std::ostream& ostr) const{
@@ -271,7 +272,7 @@ private:
 		}
 
 	}
-	//Another BFS implementation of BFS
+	//Another BFS implementation of BST
 	void breadth_first_search_v2(TreeNode<T> *p) const{
 		std::list<TreeNode<T>* >  curLayer, nextLayer;
 		unsigned int layer = 0;
