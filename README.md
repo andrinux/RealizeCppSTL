@@ -1,12 +1,12 @@
 # RealizeCppSTL
 Implement some typical data structures of C++ STL:
 
-1.Vector
+ - Vector
 
-2.List
+ - List
 
-3.Set
+ - Set
 
-4.HashSet
+ - HashSet
 
-5.Priority Queue
+ - Priority Queue
