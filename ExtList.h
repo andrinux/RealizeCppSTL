@@ -1,9 +1,3 @@
-//Content: List implementation 
-//Author: X.Z.
-//Creation Date: 3/4/2014
-
-
-
 #ifndef ExtList_h
 #define ExtList_h
 
@@ -21,6 +15,48 @@ public:
 template <class T> class ExtList;
 
 //--------------------List Iterator Class for DoubleLinkClass---------
+
+template <class T> class list_const_iterator{
+public:
+    list_const_iterator() : ptr(NULL) {}
+    list_const_iterator(Node<T>* p) : ptr(p) {}
+    list_const_iterator(list_const_iterator<T> const& old) : ptr(old.ptr) {}
+    ~list_const_iterator() {}
+    
+    T& operator*() { return ptr->value; } //return value
+    //increment &decrement operator
+    const list_const_iterator<T> & operator++(){
+        ptr = ptr->next;
+        return *this;//who does this point to?
+    }
+    const list_const_iterator<T> operator++(int){ //No & symbol
+        list_const_iterator<T> tmp(*this); //?
+        ptr = ptr->next;
+        return tmp;
+    }
+    const list_const_iterator<T> & operator--(){
+        ptr = ptr->prev;
+        return *this;
+    }
+    const list_const_iterator<T> operator--(int){
+        list_const_iterator<T> tmp(*this);
+        ptr = ptr->prev;
+        return tmp;
+    }
+    
+    friend class ExtList<T>;
+    
+    bool operator==(const list_const_iterator<T>& r) const{
+        return ptr == r.ptr;
+    }
+    bool operator!=(const list_const_iterator<T>& r) const{
+        return ptr != r.ptr;
+    }
+private:
+    //Presentation
+    Node<T>* ptr;
+};
+
 template <class T> class list_iterator{
 public:
 	list_iterator() : ptr(NULL) {}
@@ -30,16 +66,15 @@ public:
 
 	list_iterator<T> & operator=(const list_iterator<T> old){
 		ptr = old.ptr;
-		return *this;
 	}
 	T& operator*() { return ptr->value; } //return value
 	//increment &decrement operator
 	list_iterator<T> & operator++(){
 		ptr = ptr->next;
-		return *this;
+		return *this;//who does this point to?
 	}
 	list_iterator<T> operator++(int){ //No & symbol
-		list_iterator<T> tmp(*this); 
+		list_iterator<T> tmp(*this); //?
 		ptr = ptr->next;
 		return tmp;
 	}
@@ -86,7 +121,7 @@ public:
 	typedef list_iterator<T> iterator;
 	iterator erase(iterator itr);
 	void insert(iterator itr, T const& v);
-	iterator begin() const { return iterator(head); }//TODO: 
+	iterator begin() const { return iterator(head); }//TODO: what is this?
 	iterator end() const { return iterator(NULL); }
 
 	void remove_member(const T& v);
@@ -95,7 +130,7 @@ public:
 private:
 	void copyList(ExtList<T> const &old);
 	void destroyList();
-	void do_destroy(Node<T>* head);
+    void do_destroy(Node<T> * head);
 
 	//Presentation of List
 	Node<T>* head;
@@ -116,15 +151,15 @@ template <typename T>  ExtList<T>& ExtList<T>::operator=(const ExtList<T>& old){
 //push back a new element
 template <typename T> void ExtList<T>::push_back(const T& v){
 	Node<T>* curNode=new Node<T>;
-	curNode->value = v;  
-	if (head == NULL){  //TODO: to check empty list
+	curNode->value = v;  //TODO: can be short for Node<T>* curNode=new Node<T>(v);
+	if (head == NULL){  //TODO?: to check empty list, check tail or head? !tail
 		head = tail = curNode;
 	}
 	else{
 		curNode->prev = tail;
 		curNode->next = NULL;
 		curNode->prev->next = curNode; //mistake here
-		this->tail = curNode; 
+		this->tail = curNode; //TODO?: do we need & here? how to define an instance?
 	}
 	++size;
 }
@@ -169,45 +204,36 @@ template <typename T> void ExtList<T>::pop_front(){
 }
 
 //erase a elemnt in the middle
-template <typename T> typename ExtList<T>::iterator ExtList<T>::erase(iterator itr){ //TODO: use temp itr to save.!!!!!
-	if (head == NULL){
-		std::cout << "This is a blank list. Cannot erase.\n";
-		return NULL;
-	}
+template <typename T> typename ExtList<T>::iterator ExtList<T>::erase(iterator itr){
 	Node<T>* curNode = itr.ptr;
-	iterator tmp(itr.ptr->next);
 	Node<T>* prevNode = curNode->prev;
 	Node<T>* nextNode = curNode->next;
 	prevNode->next = nextNode;
 	nextNode->prev = prevNode;
 	--size;
-	delete itr.ptr;
-	return tmp;
-
-	//--size;
-	//iterator result(itr.ptr);
-	//itr.ptr->prev->next = itr.ptr->next;
-	//itr.ptr->next->prev = itr.ptr->prev;
-	//delete itr.ptr;
-	//return result;
-
+	delete curNode;
+	return itr;
+	//TODO?: do we need delet itr here?
 }
 
 //insert one elememmt, use itr as argument iterator insert(iterator itr, T const& v);
 template <typename T> void ExtList<T>::insert(iterator itr, const T& v){
 	Node<T>* newNode = new Node<T>(v);
+	//need to check head/tail
+	if (itr.ptr == head){
+		head = newNode;
+	}
+	else{
+		itr.ptr->next = newNode;
+	}
+	itr.ptr->prev = newNode;
 	newNode->prev = itr.ptr->prev;
 	newNode->next = itr.ptr;
-	itr.ptr->prev = newNode;
-	if (itr.ptr == head)
-		head = newNode;
-	else
-		newNode->prev->next = newNode;
 	++size;
 }
 
 //copy list
-template <typename T> void ExtList<T>::copyList(const ExtList<T>& old){ 
+template <typename T> void ExtList<T>::copyList(const ExtList<T>& old){ //TODO?:where to insert the "const"
 	size = old.size;
 	//blank list
 	if (size == 0){
@@ -215,14 +241,23 @@ template <typename T> void ExtList<T>::copyList(const ExtList<T>& old){
 		return;
 	}
 	//Two options: iterator or just copy one by one?
-	//Node<T>* newNode;
-	//for (list_iterator<T> itr = old.begin(); itr != old.end(); itr++){
-	//	
-	//}
+    /*
+	Node<T>* newNode;
+	for (list_iterator<T> itr = old.begin(); itr != old.end(); itr++){
+        newNode = new Node<T>;
+		newNode->value = itr.ptr->value;
+		newNode->next = itr.ptr->next;
+		newNode->prev = itr.ptr->prev;
+        
+		if (itr == old.begin())
+			head = newNode;
 
+	}
+    tail = newNode;
+    */
+     
 	
 	//Option2: copy one by one directly
-
 	head = new Node<T>(old.head->value);
 	tail = head;
 	Node<T> *curNode = old.head->next;
@@ -234,45 +269,47 @@ template <typename T> void ExtList<T>::copyList(const ExtList<T>& old){
 		tail = newNode;
 		curNode = curNode->next;
 	}
-
+    
 }
 
 //destroy List
 
 template <typename T> void ExtList<T>::destroyList(){
 	//remove head, size,, and all the memory
-	
-	//for (list_iterator<T> itr = this->begin(); itr != this->end(); ){
-	//	list_iterator<T> new_itr = itr++;
-	//	delete itr.ptr;
-	//	itr = new_itr;
-	//}
-	//head = tail = NULL;
-	//size = 0;
+    if (size == 0) return;
+	for (list_iterator<T> itr = this->begin(); itr != this->end();){
+        Node<T> * tmp_ptr = itr.ptr -> next;
+		delete itr.ptr;
+        itr.ptr = tmp_ptr;
+	}
+	head = tail = NULL;
+	size = 0;
 	
 	//Option2:
-	//if (head == NULL)
-	//	return;
-	//Node<T> * curNode = head;
-	//Node<T> * nextNode= head->next;
-	//while (curNode){
-	//	nextNode = curNode->next;
-	//	delete curNode;
-	//	curNode = nextNode;
-	//}
-	//size = 0;
-	//head = tail = NULL;
-
-	//Option3: Use recursion"
-	do_destroy(head);
+    /*
+    if (head == NULL) return;
+	Node<T> * curNode = head;
+	Node<T> * nextNode= head->next;
+	while (curNode){
+		nextNode = curNode->next;
+		delete curNode;
+		curNode = nextNode;
+	}
 	size = 0;
-	head = tail= NULL;
-	
+	head = tail = NULL;
+    */
+    /*
+    do_destroy(head);
+    head = NULL;
+     */
 }
-template <typename T> void ExtList<T>::do_destroy(Node<T>* head){
-	if (head == NULL) return;
-	do_destroy(head->next);
+
+template <typename T> void ExtList<T>::do_destroy(Node<T> * head) {
+    if (head == NULL) return;
+    do_destroy(head->next);
+    delete head;
 }
+
 
 //remove member &value traverse could use iterator
 template <typename T> void ExtList<T>::remove_member(const T& v){ 
@@ -301,7 +338,7 @@ template <typename T> void ExtList<T>::printList(){
 		std::cout << ((i % 10 == 9) ? "\n" : " ");
 		curNode = curNode->next;
 	}
-	std::cout << "\n-----------------------";
+	std::cout << "-----------------------";
 	std::cout << std::endl;
 }
 
